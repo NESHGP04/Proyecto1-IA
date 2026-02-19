@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from collections import deque
 from search_problem import SearchProblem
 from maze_problem import MazeProblem
+import heapq
 
 '''
 TASK 1.1
@@ -40,23 +41,58 @@ def discretize_image(img, tile_size=10):
                 j*tile_size:(j+1)*tile_size
             ]
             
-            avg_color = np.mean(tile.reshape(-1,3), axis=0)
-            
-            r, g, b = avg_color
-            
-            # Clasificación
-            if np.all(avg_color < 20):   # negro
+            pixels = tile.reshape(-1, 3)
+            total_pixels = len(pixels)
+
+            # ----------------------------
+            # DETECCIÓN DE PARED (NEGRO)
+            # ----------------------------
+            black_pixels = np.sum(
+                (pixels[:,0] < 50) &
+                (pixels[:,1] < 50) &
+                (pixels[:,2] < 50)
+            )
+            black_ratio = black_pixels / total_pixels
+
+            # ----------------------------
+            # DETECCIÓN DE INICIO (ROJO)
+            # ----------------------------
+            red_pixels = np.sum(
+                (pixels[:,0] > 200) &
+                (pixels[:,1] < 80) &
+                (pixels[:,2] < 80)
+            )
+            red_ratio = red_pixels / total_pixels
+
+            # ----------------------------
+            # DETECCIÓN DE META (VERDE)
+            # ----------------------------
+            green_pixels = np.sum(
+                (pixels[:,1] > 200) &
+                (pixels[:,0] < 80) &
+                (pixels[:,2] < 80)
+            )
+            green_ratio = green_pixels / total_pixels
+
+            # ----------------------------
+            # CLASIFICACIÓN FINAL
+            # ----------------------------
+            if black_ratio > 0.52:
                 row.append(1)  # pared
-            elif r > 200 and g < 80 and b < 80:  # rojo
+
+            elif red_ratio > 0.4:
                 row.append(2)  # inicio
                 start = (i, j)
-            elif g > 200 and r < 80 and b < 80:  # verde
+
+            elif green_ratio > 0.4:
                 row.append(3)  # meta
                 goals.append((i, j))
+
             else:
                 row.append(0)  # libre
         
         grid.append(row)
+
     if start is None:
         raise ValueError("Imagen sin punto de inicio")
 
@@ -72,6 +108,10 @@ print("Start:", start)
 print("Goals:", goals)
 print("Grid shape:", grid.shape)
 
+unique, counts = np.unique(grid, return_counts=True)
+print(dict(zip(unique, counts)))
+
+
 #Visualizar grid
 plt.imshow(grid, cmap="gray")
 plt.title("Grid Discretizado")
@@ -86,11 +126,17 @@ def bfs(problem):
     
     frontier = deque([start])
     came_from = {start: None}
-    
+    steps = 0
+
     while frontier:
         current = frontier.popleft()
+        steps += 1
         
+        if steps % 500 == 0:
+            print("Explorados:", steps)
+
         if problem.goal_test(current):
+            print("Meta encontrada en", steps, "expansiones")
             return reconstruct_path(came_from, current)
         
         for action in problem.actions(current):
@@ -145,9 +191,16 @@ def visualize_path(grid, path):
     plt.title("Path Found")
     plt.show()
 
+print("Creando problema...")
 problem = MazeProblem(grid, start, goals)
+print("Problema creado.")
 
+print("Ejecutando BFS...")
 path_bfs = bfs(problem)
+print("BFS terminó")
+
+print("Resultado BFS:", path_bfs)
+
 if path_bfs is not None:
     print("BFS Path length:", len(path_bfs))
     visualize_path(grid, path_bfs)
@@ -162,3 +215,52 @@ if path_dfs is not None:
 else:
     print("No se encontró camino con DFS")
 
+'''
+Task 1.3 (A*) 
+'''
+#Heurística
+def manhattan(state, goals):
+    return min(
+        abs(state[0] - goal[0]) + abs(state[1] - goal[1])
+        for goal in goals
+    )
+
+#A*
+def astar(problem):
+    
+    start = problem.initial_state()
+    
+    frontier = []
+    heapq.heappush(frontier, (0, start))
+    
+    came_from = {start: None}
+    g_cost = {start: 0}
+    
+    while frontier:
+        _, current = heapq.heappop(frontier)
+        
+        if problem.goal_test(current):
+            return reconstruct_path(came_from, current)
+        
+        for action in problem.actions(current):
+            neighbor = problem.result(current, action)
+            
+            tentative_g = g_cost[current] + problem.step_cost(current, action, neighbor)
+            
+            if neighbor not in g_cost or tentative_g < g_cost[neighbor]:
+                g_cost[neighbor] = tentative_g
+                
+                f = tentative_g + manhattan(neighbor, problem.goals)
+                
+                heapq.heappush(frontier, (f, neighbor))
+                came_from[neighbor] = current
+    
+    return None
+
+path_astar = astar(problem)
+
+if path_astar is not None:
+    print("A* Path length:", len(path_astar))
+    visualize_path(grid, path_astar)
+else:
+    print("No se encontró camino con A*")
