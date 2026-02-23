@@ -30,7 +30,7 @@ class MazeProblem(SearchProblem):
         
         for action, (ni, nj) in possible.items():
             if 0 <= ni < self.rows and 0 <= nj < self.cols:
-                if self.grid[ni][nj] != 1:  # no pared
+                if self.grid[ni][nj] is not None:
                     moves.append(action)
         
         return moves
@@ -48,4 +48,20 @@ class MazeProblem(SearchProblem):
             return (i, j+1)
     
     def step_cost(self, state, action, next_state):
-        return 1
+        i, j = next_state
+        cell = self.grid[i][j]
+
+        #si es pared
+        if cell is None:
+            return float("inf")
+
+        #convertir a numpy y normalizar
+        rgb = np.array(cell).reshape(1, -1) / 255.0
+
+        prediction = self.model.predict(rgb)[0]
+
+        label = self.idx_to_label[prediction]
+
+        cost = self.label_to_cost.get(label, 1)
+
+        return cost
