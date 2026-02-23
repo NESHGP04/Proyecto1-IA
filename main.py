@@ -93,7 +93,7 @@ def discretize_image(img, tile_size=10):
 
             else:
                 row.append(avg_color)
-                    
+        
         grid.append(row)
 
     if start is None:
@@ -197,13 +197,25 @@ def dfs(problem):
     return None
 
 def visualize_path(grid, path):
-    grid_copy = np.copy(grid)
-    
+
+    height = len(grid)
+    width = len(grid[0])
+
+    img = np.zeros((height, width, 3), dtype=np.uint8)
+
+    # Convertir grid a imagen RGB
+    for i in range(height):
+        for j in range(width):
+            if grid[i][j] is None:
+                img[i][j] = [0, 0, 0]  # pared
+            else:
+                img[i][j] = grid[i][j]  # color real
+
+    # Dibujar camino en morado
     for (i, j) in path:
-        if grid_copy[i][j] == 0:
-            grid_copy[i][j] = 4  # marcar camino
-    
-    plt.imshow(grid_copy)
+        img[i][j] = [255, 0, 255]
+
+    plt.imshow(img)
     plt.title("Path Found")
     plt.show()
 

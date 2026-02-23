@@ -39,9 +39,7 @@ class MazeProblem(SearchProblem):
         #mapeo de costos
         self.label_to_cost = {
             "Blue": 10,
-            "Green": 3,
             "Gray": 1,
-            "Yellow": 5
         }
     
     def initial_state(self):
@@ -49,6 +47,11 @@ class MazeProblem(SearchProblem):
     
     def goal_test(self, state):
         return state in self.goals
+    
+    def get_average_rgb(self, state):
+        row, col = state
+        tile = self.grid[row][col]  
+        return tile  
     
     def actions(self, state):
         i, j = state
