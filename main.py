@@ -77,20 +77,23 @@ def discretize_image(img, tile_size=10):
             # ----------------------------
             # CLASIFICACIÓN FINAL
             # ----------------------------
+            avg_color = np.mean(pixels, axis=0)
+            avg_color = tuple(avg_color.astype(int))
+
             if black_ratio > 0.52:
-                row.append(1)  # pared
+                row.append(None)
 
             elif red_ratio > 0.4:
-                row.append(2)  # inicio
+                row.append(avg_color)
                 start = (i, j)
 
             elif green_ratio > 0.4:
-                row.append(3)  # meta
+                row.append(avg_color)
                 goals.append((i, j))
 
             else:
-                row.append(0)  # libre
-        
+                row.append(avg_color)
+                    
         grid.append(row)
 
     if start is None:

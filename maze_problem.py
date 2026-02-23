@@ -1,6 +1,8 @@
 from search_problem import SearchProblem
+import numpy as np
+from mlp_model import MLP
 
-class MazeProblem(SearchProblem):  # 👈 HEREDA AQUÍ
+class MazeProblem(SearchProblem):
     
     def __init__(self, grid, start, goals):
         self.grid = grid
