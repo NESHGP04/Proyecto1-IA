@@ -1,6 +1,7 @@
 from search_problem import SearchProblem
 import numpy as np
 from mlp_model import MLP
+import os
 
 class MazeProblem(SearchProblem):
     
@@ -11,8 +12,13 @@ class MazeProblem(SearchProblem):
         self.rows = len(grid)
         self.cols = len(grid[0])
 
+        base_path = os.path.join(os.path.dirname(__file__), "train_results")
+
         #cargar diccionario 
-        self.idx_to_label = np.load("idx_to_label.npy", allow_pickle=True).item()
+        self.idx_to_label = np.load(
+            os.path.join(base_path, "idx_to_label.npy"),
+            allow_pickle=True
+        ).item()
 
         #crear modelo como en train_model.py
         self.model = MLP(
@@ -23,12 +29,12 @@ class MazeProblem(SearchProblem):
         )
 
         #cargar pesos entrenados
-        self.model.W1 = np.load("W1.npy")
-        self.model.b1 = np.load("b1.npy")
-        self.model.W2 = np.load("W2.npy")
-        self.model.b2 = np.load("b2.npy")
-        self.model.W3 = np.load("W3.npy")
-        self.model.b3 = np.load("b3.npy")
+        self.model.W1 = np.load(os.path.join(base_path, "W1.npy"))
+        self.model.b1 = np.load(os.path.join(base_path, "b1.npy"))
+        self.model.W2 = np.load(os.path.join(base_path, "W2.npy"))
+        self.model.b2 = np.load(os.path.join(base_path, "b2.npy"))
+        self.model.W3 = np.load(os.path.join(base_path, "W3.npy"))
+        self.model.b3 = np.load(os.path.join(base_path, "b3.npy"))
 
         #mapeo de costos
         self.label_to_cost = {
