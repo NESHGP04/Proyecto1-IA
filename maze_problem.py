@@ -10,6 +10,33 @@ class MazeProblem(SearchProblem):
         self.goals = goals
         self.rows = len(grid)
         self.cols = len(grid[0])
+
+        #cargar diccionario 
+        self.idx_to_label = np.load("idx_to_label.npy", allow_pickle=True).item()
+
+        #crear modelo como en train_model.py
+        self.model = MLP(
+            input_size=3,
+            hidden1=64,   
+            hidden2=32,
+            output_size=len(self.idx_to_label)
+        )
+
+        #cargar pesos entrenados
+        self.model.W1 = np.load("W1.npy")
+        self.model.b1 = np.load("b1.npy")
+        self.model.W2 = np.load("W2.npy")
+        self.model.b2 = np.load("b2.npy")
+        self.model.W3 = np.load("W3.npy")
+        self.model.b3 = np.load("b3.npy")
+
+        #mapeo de costos
+        self.label_to_cost = {
+            "Blue": 10,
+            "Green": 3,
+            "Gray": 1,
+            "Yellow": 5
+        }
     
     def initial_state(self):
         return self.start
@@ -57,11 +84,8 @@ class MazeProblem(SearchProblem):
 
         #convertir a numpy y normalizar
         rgb = np.array(cell).reshape(1, -1) / 255.0
-
         prediction = self.model.predict(rgb)[0]
-
         label = self.idx_to_label[prediction]
-
         cost = self.label_to_cost.get(label, 1)
 
         return cost

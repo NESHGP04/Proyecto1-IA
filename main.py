@@ -102,23 +102,36 @@ def discretize_image(img, tile_size=10):
     if len(goals) == 0:
         raise ValueError("Imagen sin meta")
 
-    return np.array(grid), start, goals
+    return grid, start, goals
 
 img = load_image("./Img/turing.bmp")
 grid, start, goals = discretize_image(img, tile_size=10)
 
 print("Start:", start)
 print("Goals:", goals)
-print("Grid shape:", grid.shape)
+print("Grid shape:", (len(grid), len(grid[0])))
 
-unique, counts = np.unique(grid, return_counts=True)
-print(dict(zip(unique, counts)))
+#unique, counts = np.unique(grid, return_counts=True)
+#print(dict(zip(unique, counts)))
 
 
 #Visualizar grid
-plt.imshow(grid, cmap="gray")
-plt.title("Grid Discretizado")
-plt.show()
+def visualize_grid(grid):
+    img = np.zeros((len(grid), len(grid[0]), 3), dtype=np.uint8)
+
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if grid[i][j] is None:
+                img[i][j] = [0, 0, 0]  # pared negra
+            else:
+                img[i][j] = grid[i][j]  # color real
+
+    plt.imshow(img)
+    plt.title("Grid Discretizado")
+    plt.show()
+
+
+visualize_grid(grid)
 
 '''
 Task 1.2 (BFS y DFS)
