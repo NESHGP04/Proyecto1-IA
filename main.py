@@ -104,7 +104,7 @@ def discretize_image(img, tile_size=10):
 
     return grid, start, goals
 
-img = load_image("./Img/turing.bmp")
+img = load_image("./Img/demo_maze.bmp")
 grid, start, goals = discretize_image(img, tile_size=10)
 
 print("Start:", start)

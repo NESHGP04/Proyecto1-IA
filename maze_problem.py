@@ -39,7 +39,7 @@ class MazeProblem(SearchProblem):
         #mapeo de costos
         self.label_to_cost = {
             "Blue": 10,
-            "Gray": 1,
+            "Brown": 1,
         }
     
     def initial_state(self):
@@ -96,5 +96,7 @@ class MazeProblem(SearchProblem):
         prediction = self.model.predict(rgb)[0]
         label = self.idx_to_label[prediction]
         cost = self.label_to_cost.get(label, 1)
+
+        #print("Color:", cell, "Label:", label, "Costo:", cost)
 
         return cost
